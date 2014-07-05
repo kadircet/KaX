@@ -15,7 +15,8 @@ KERNEL_SUBDIRS = boot init
 all: loader.bin kernel.bin
 	cat loader.bin kernel.bin > KaX.img
 	
-run: loader.bin kernel.bin
+run: all
+	make clean
 	bochs -f KaX.bochs
 
 #bootloader.
@@ -55,6 +56,6 @@ clean:
 	rm -f boot/boot.o boot/kernel.lds.s threads/loader.d
 	rm -f kernel.o kernel.lds.s
 	rm -f kernel.bin loader.bin
-	rm -f KaX.img
+	#rm -f KaX.img
 	
 -include $(DEPENDS)
