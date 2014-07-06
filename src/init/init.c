@@ -27,7 +27,8 @@ void puts(char *str)
 
 int main()
 {
+	for(;;);
 	cls();
 	puts("Hello from KaX!!");	
-	for(;;);
+	
 }

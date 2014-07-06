@@ -1,11 +1,11 @@
-#include "boot/boot.h"
+#include <boot/boot.h>
 
 	.code16
 	xor	%ax, %ax
 	mov %ax, %ds
 	mov %ax, %ss
 	mov %ax, %es
-	mov $0xf000, %esp
+	mov $STACK_POINTER, %esp
 	
 	call puts
 	.string "Loading KaX\r\n"
@@ -18,6 +18,7 @@
 	call puts
 	.string "            [Loaded]\r\n"
 	
+	#get start address from efi header(offset 0x18)
 	mov %es:0x18, %dx
 	mov %dx, addr
 	movw $(LOADER_KERN_BASE/0x10), addr+2

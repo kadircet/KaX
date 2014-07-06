@@ -14,9 +14,9 @@ KERNEL_SUBDIRS = boot init
 
 all: loader.bin kernel.bin
 	cat loader.bin kernel.bin > KaX.img
+	#make clean
 	
 run: all
-	make clean
 	bochs -f KaX.bochs
 
 #bootloader.
@@ -30,10 +30,10 @@ SOURCES = $(foreach dir,$(KERNEL_SUBDIRS),$($(dir)_SRC))
 OBJECTS = $(patsubst %.c,%.o,$(patsubst %.S,%.o,$(SOURCES)))
 DEPENDS = $(patsubst %.o,%.d,$(OBJECTS))
 
-boot/kernel.lds.s: CPPFLAGS += -P
-boot/kernel.lds.s: boot/kernel.lds.S boot/boot.h
+kernel.lds.s: CPPFLAGS += -P
+kernel.lds.s: kernel.lds.S boot/boot.h
 
-kernel.o: boot/kernel.lds.s $(OBJECTS)
+kernel.o: kernel.lds.s $(OBJECTS)
 	$(LD) -T $< -o $@ $(OBJECTS)
 
 kernel.bin: kernel.o
@@ -53,7 +53,7 @@ loader.bin: boot/boot.o
 	
 clean:
 	rm -f $(OBJECTS) $(DEPENDS) 
-	rm -f boot/boot.o boot/kernel.lds.s threads/loader.d
+	rm -f boot/boot.o kernel.lds.s threads/loader.d
 	rm -f kernel.o kernel.lds.s
 	rm -f kernel.bin loader.bin
 	#rm -f KaX.img

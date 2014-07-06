@@ -1,4 +1,4 @@
-#include "boot/boot.h"
+#include <boot/boot.h>
 
 OUTPUT_FORMAT("elf32-i386")
 OUTPUT_ARCH("i386")
@@ -6,7 +6,7 @@ ENTRY(setup)			/* Kernel starts at "start" symbol. */
 SECTIONS
 {
   /* Specify the kernel base address. */
-  _start = LOADER_PHYS_BASE + LOADER_KERN_BASE;
+  _start = LOADER_PHYS_BASE + KERNEL_BASE;
 
   /* Make room for the ELF headers. */
   . = _start + SIZEOF_HEADERS;
