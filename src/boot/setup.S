@@ -12,38 +12,17 @@ setup:
 	#GetMemSize (MAX 64MB)
 	mov $(LOADER_KERN_BASE/0x10), %ax
 	mov %ax, %ds
-
-	movb $0x88, %ah
-	int $0x15
-	addl $1024, %eax	# Total kB memory
-	shrl $2, %eax		# Total 4 kB pages
+	mov %ax, %es
+	
+	movl $ram_map - LOADER_PHYS_BASE - KERNEL_BASE, %eax
+	movl $100, %edx
+	push $0x0
+	call detectMemory
 	addr32 movl %eax, ram_size - LOADER_PHYS_BASE - KERNEL_BASE
 
 	cli
 	cld
-	mov $(LOADER_KERN_BASE/0x10), %ax
-	mov %ax, %ds
-	mov $(KERNEL_BASE/0x10), %ax
-	mov %ax, %es
-copy:
-	subl %edi, %edi
-	subl %esi, %esi
-	movl $0x8000, %ecx	#32kB at a time
-	rep
-	movsw
 	
-	mov %ds, %ax
-	add $0x1000, %ax
-	mov %ax, %ds
-	mov %es, %ax
-	add $0x1000, %ax
-	mov %ax, %es
-	cmp $(LOADER_KERN_BASE/0x10), %ax
-	jnz copy
-
-	mov $(LOADER_KERN_BASE/0x10), %ax
-	mov %ax, %ds
-
 	#Enable A20
 1:	inb $0x64, %al
 	testb $0x2, %al
@@ -64,15 +43,35 @@ copy:
 	jnz 1b
 
 #### Switch to protected mode.
-	cli
-	data32 addr32 lgdt gdtdesc - LOADER_PHYS_BASE - KERNEL_BASE
-
+	addr32 lgdt gdtdesc - LOADER_PHYS_BASE - KERNEL_BASE
+	
 	movl %cr0, %eax
 	orl $CR0_PE | CR0_WP | CR0_EM, %eax
 	movl %eax, %cr0
 
+	data32 ljmp $SEL_KCSEG, $flushmenigga + LOADER_KERN_BASE - LOADER_PHYS_BASE - KERNEL_BASE
+	
+	.code32
+flushmenigga:
+	mov $SEL_KDSEG, %ax
+	mov %ax, %ds
+	mov %ax, %es
+	mov %ax, %fs
+	mov %ax, %gs
+	mov %ax, %ss
+	
+	movl $LOADER_KERN_BASE, %esi
+	movl $KERNEL_BASE, %edi
+copy:
+	movl $0x8000, %ecx	#32kB at a time
+	rep
+	movsw
+	
+	cmp $KERNEL_BASE, %esi
+	jnz copy
+
 # Jump to our startup code :)
-	data32 ljmp $SEL_KCSEG, $start
+	ljmp $SEL_KCSEG, $start
 
 	.align 8
 gdt:
@@ -82,8 +81,10 @@ gdt:
 
 gdtdesc:
 	.word	gdtdesc - gdt - 1	# Size of the GDT, minus 1 byte.
-	.long	gdt			# Address of the GDT.
+	.long	gdt	+ LOADER_KERN_BASE - LOADER_PHYS_BASE - KERNEL_BASE		# Address of the GDT.
 
-.globl .ram_size
+.globl ram_map, ram_size
 ram_size:
 	.long 0x00
+ram_map:
+	.fill 2000/8,0x08, 0x00

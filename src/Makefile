@@ -5,10 +5,10 @@ OBJCOPY = objcopy
 SRCDIR = .
 DEFINES =
 WARNINGS = -Wall -W -Wstrict-prototypes -Wmissing-prototypes -Wsystem-headers
-CFLAGS = -g -msoft-float -O -fno-stack-protector -fno-builtin
-CPPFLAGS = -nostdinc -I$(SRCDIR) -I$(SRCDIR)/lib
+CFLAGS = -msoft-float -O -fno-stack-protector -fno-builtin
+CPPFLAGS = -nostdinc -I$(SRCDIR) -I$(SRCDIR)/lib -I$(SRCDIR)/include
 ASFLAGS = -Wa,--gstabs
-LDFLAGS = 
+LDFLAGS =
 DEPS = -MMD -MF $(@:.o=.d)
 KERNEL_SUBDIRS = boot init
 
@@ -21,17 +21,18 @@ run: all
 
 #bootloader.
 boot_SRC = boot/setup.S		# Setup code.
-boot_SRC += boot/start.S		# Startup code.
+boot_SRC+= boot/setup_c.c	# Misc
+boot_SRC+= boot/start.S		# Startup code.
 
 #init
-init_SRC += init/init.c			# Main
+init_SRC = init/init.c			# Main
 
 SOURCES = $(foreach dir,$(KERNEL_SUBDIRS),$($(dir)_SRC))
 OBJECTS = $(patsubst %.c,%.o,$(patsubst %.S,%.o,$(SOURCES)))
 DEPENDS = $(patsubst %.o,%.d,$(OBJECTS))
 
 kernel.lds.s: CPPFLAGS += -P
-kernel.lds.s: kernel.lds.S boot/boot.h
+kernel.lds.s: kernel.lds.S
 
 kernel.o: kernel.lds.s $(OBJECTS)
 	$(LD) -T $< -o $@ $(OBJECTS)

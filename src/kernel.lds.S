@@ -25,6 +25,5 @@ SECTIONS
   _end_bss = .;
 
   _end = .;
-
   ASSERT (_end - _start <= 512K, "Kernel image is too big.")
 }

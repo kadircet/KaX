@@ -1,4 +1,4 @@
-#include "boot/boot.h"
+#include <boot/boot.h>
 
 	.section .start
 
@@ -14,9 +14,8 @@ start:
 	mov %ax, %ss
 	addl $LOADER_PHYS_BASE, %esp
 	movl $0, %ebp			# Null-terminate main()'s backtrace
-
-#### Call main().
-
+	
+	#### jmp to main().
 	jmp main
 
 # main() shouldn't ever return.  If it does, spin.

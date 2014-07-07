@@ -4,7 +4,7 @@
 #define LOADER_BASE 0x7c00
 #define LOADER_END  0x7e00
 
-#define KERNEL_BASE 0x50000
+#define KERNEL_BASE 0x100000
 
 #define LOADER_KERN_BASE 0x90000
 
